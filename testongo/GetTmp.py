@@ -1,5 +1,11 @@
 import os
+import threading
+
 allFileNum = 0
+distdir={"攀枝花":"56666","凉山":"56571","甘孜":"56146","阿坝州":"56172","宜宾":"56492","乐山":"56386",
+         "内江":"57503","成都":"56187","眉山":"56391","德阳":"56198","绵阳":"56196","广元":"57206",
+         "泸州":"57508","广安":"57415","南充":"57411","达州":"57328","巴中":"57313"}
+fileList = []
 def printPath(level, path):
     global allFileNum
     ''''' 
@@ -8,7 +14,6 @@ def printPath(level, path):
     # 所有文件夹，第一个字段是次目录的级别
     dirList = []
     # 所有文件
-    fileList = []
     # 返回一个列表，其中包含在目录条目的名称(google翻译)
     files = os.listdir(path)
     # 先添加目录级别
@@ -36,7 +41,7 @@ def printPath(level, path):
             printPath((int(dirList[0]) + 1), path + '/' + dl)
     for fl in fileList:
         # 打印文件
-        print( '-' * (int(dirList[0])), fl  )
+        print('-' * (int(dirList[0])), fl)
         # 随便计算一下有多少个文件
         allFileNum = allFileNum + 1
 
@@ -49,11 +54,26 @@ def getDataFromOneFile(filepath):
         return
 
     for line in fin:
-        everyword=line.split(' ')
+        everyrow=line.split('\n')
+        everyword=everyrow[0].split(' ')
         for i in range(len(everyword)):
-            print(everyword[i])
+            if everyword[0] in distdir.values():
+                print(everyword)
+
 
 if __name__ == "__main__":
     # printPath(1, 'F:/3.26/2018温度')
-    # print('总文件数 =', allFileNum )
-    getDataFromOneFile("F:/3.26/2018温度/201801.000")
+    printPath(1, 'F:/2018')
+    print('总文件数 =', allFileNum)
+    threads = []
+    for item_file in fileList:
+        tt=threading.Thread(target=getDataFromOneFile, args=(item_file,))
+        threads.append(tt)
+    # t1 = threading.Thread(target=getDataFromOneFile, args=(u'F:/2018/201801.000',))
+    # threads.append(t1)
+    # t2 = threading.Thread(target=getDataFromOneFile, args=(u'F:/2018/201802.000',))
+    for t in threads:
+        t.setDaemon(True)
+        t.start()
+    getDataFromOneFile("F:/2018/201801.000")
+    # getDataFromOneFile("F:/3.26/2018温度/201801.000")
