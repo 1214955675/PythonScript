@@ -1,11 +1,12 @@
-import os
-import threading
 import xlwt
+import xlrd
+import threading
+import os
 allFileNum = 0
+fileList = []
 distdir={"攀枝花":"56666","凉山":"56571","甘孜":"56146","阿坝州":"56172","宜宾":"56492","乐山":"56386",
          "内江":"57503","成都":"56187","眉山":"56391","德阳":"56198","绵阳":"56196","广元":"57206",
          "泸州":"57508","广安":"57415","南充":"57411","达州":"57328","巴中":"57313"}
-fileList = []
 def printPath(level, path):
     global allFileNum
     ''''' 
@@ -27,8 +28,9 @@ def printPath(level, path):
                 # 添加非隐藏文件夹
                 dirList.append(f)
         if(os.path.isfile(path + '/' + f)):
+            if 'dist' in f:
             # 添加文件
-            fileList.append(path+'/'+f)
+                fileList.append(path+'/'+f)
     # 当一个标志使用，文件夹列表第一个级别不打印
     i_dl = 0
     for dl in dirList:
@@ -44,50 +46,37 @@ def printPath(level, path):
         print('-' * (int(dirList[0])), fl)
         # 随便计算一下有多少个文件
         allFileNum = allFileNum + 1
-
-
-def getDataFromOneFile(filepath,num):
-    myWorkbook = xlwt.Workbook()
-    mySheet = myWorkbook.add_sheet(str(num))
-    # myWorkbook = xlrd.open_workbook(filepath+"dist"+num)
-    # mySheets = myWorkbook.sheets()
-    try:
-        fin = open(filepath, "r")
-    except IOError:
-        print("Error: open file failed.")
-        return
-    numrow = 0
-    for line in fin:
-        everyrow=line.split('\n')
-        everyword=everyrow[0].split(' ')
-
-        for i in range(len(everyword)):
-            if everyword[0] in distdir.values():
-                numcol=0
-                for word in everyword:
-                    if word != "":
-                        mySheet.write(numrow,numcol,word)
-                        numcol=numcol+1
-                numrow=numrow+1
-                print(everyword)
-    myWorkbook.save(filepath+"dist.xls")
-
-if __name__ == "__main__":
+def formatfile(filepath,num):
+    distcitycode = distdir.get(list(distdir.keys())[num])
+    distcity = list(distdir.keys())[num]
+    print(filepath+"------"+str(distcity))
+    #用于写入xls
+    mywriteWorkbook = xlwt.Workbook()
+    mywriteSheet = mywriteWorkbook.add_sheet(str(num),cell_overwrite_ok=True)
+    for f in fileList:
+        workfile = xlrd.open_workbook(f)
+        table = workfile.sheet_by_index(0)
+        numrow=0
+        for i in range(table.nrows):
+            citycodeinmiddlefile=table.row_values(i)[0]
+            if  citycodeinmiddlefile == distcitycode:
+                mywriteSheet.write(numrow,0,table.row_values(i)[0])
+                mywriteSheet.write(numrow,1,table.row_values(i)[1])
+                mywriteSheet.write(numrow,2,table.row_values(i)[2])
+                mywriteSheet.write(numrow,3,table.row_values(i)[3])
+                mywriteSheet.write(numrow,4,table.row_values(i)[4])
+            numrow=numrow+1;
+            print(table.row_values(i))
+    mywriteWorkbook.save(filepath+str(distcity)+".xls")
+if __name__ == '__main__':
     printPath(1, 'F:/3.26/2018温度')
-    # printPath(1, 'F:/2018')
-    print('总文件数 =', allFileNum)
-    threads = []
+    threads=[]
     num=0
-    for item_file in fileList:
-        tt=threading.Thread(target=getDataFromOneFile, args=(item_file,num,))
-        num=num+1;
+    for i in range(len(distdir)):
+        tt = threading.Thread(target=formatfile, args=('F:/3.26/2018温度/', num,))
         threads.append(tt)
-    # t1 = threading.Thread(target=getDataFromOneFile, args=(u'F:/2018/201801.000',))
-    # threads.append(t1)
-    # t2 = threading.Thread(target=getDataFromOneFile, args=(u'F:/2018/201802.000',))
+        num=num+1
     for t in threads:
         # t.setDaemon(True)
         t.start()
-    
-    # getDataFromOneFile("F:/2018/201801.000")
-    # getDataFromOneFile("F:/3.26/2018温度/201801.000")
+
