@@ -73,8 +73,8 @@ def getDataFromOneFile(filepath,num):
     myWorkbook.save(filepath+"dist.xls")
 
 if __name__ == "__main__":
-    printPath(1, 'F:/3.26/2018温度')
-    # printPath(1, 'F:/2018')
+    # printPath(1, 'F:/3.26/2018温度')
+    printPath(1, 'F:/2018')
     print('总文件数 =', allFileNum)
     threads = []
     num=0

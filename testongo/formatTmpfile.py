@@ -69,11 +69,15 @@ def formatfile(filepath,num):
             print(table.row_values(i))
     mywriteWorkbook.save(filepath+str(distcity)+".xls")
 if __name__ == '__main__':
-    printPath(1, 'F:/3.26/2018温度')
+    printPath(1, 'F:/2018')
+    finalpath='F:/2018/final/'
+    isExists = os.path.exists(finalpath)
+    if not isExists:
+        os.makedirs(finalpath)
     threads=[]
     num=0
     for i in range(len(distdir)):
-        tt = threading.Thread(target=formatfile, args=('F:/3.26/2018温度/', num,))
+        tt = threading.Thread(target=formatfile, args=(finalpath, num,))
         threads.append(tt)
         num=num+1
     for t in threads:
